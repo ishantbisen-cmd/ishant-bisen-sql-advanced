@@ -381,3 +381,28 @@ SELECT o.order_id,
 FROM Orders o
 INNER JOIN Products p ON o.product_id = p.product_id
 ORDER BY o.order_id;
+
+
+-- =====================================================================
+-- Section 9: Transactions
+-- =====================================================================
+
+-- Task 18: Update a product's price inside transactions using COMMIT and ROLLBACK.
+
+-- Price before any change.
+SELECT product_id, product_name, price FROM Products WHERE product_id = 1;
+
+-- COMMIT: the new price is saved permanently.
+START TRANSACTION;
+UPDATE Products SET price = 849.00 WHERE product_id = 1;
+COMMIT;
+
+SELECT product_id, product_name, price FROM Products WHERE product_id = 1;
+
+-- ROLLBACK: the change is visible inside the transaction, then undone.
+START TRANSACTION;
+UPDATE Products SET price = 99.00 WHERE product_id = 1;
+SELECT product_id, product_name, price FROM Products WHERE product_id = 1;
+ROLLBACK;
+
+SELECT product_id, product_name, price FROM Products WHERE product_id = 1;
