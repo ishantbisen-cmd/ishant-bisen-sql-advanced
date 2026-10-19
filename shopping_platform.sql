@@ -237,3 +237,26 @@ LEFT JOIN (SELECT DISTINCT o.customer_id
 INNER JOIN Customers c ON c.customer_id = a.customer_id
 WHERE b.customer_id IS NULL
 ORDER BY a.customer_id;
+
+
+-- =====================================================================
+-- Section 4: Window Functions
+-- =====================================================================
+
+-- Task 9: Rank products by price within each category.
+SELECT category,
+       product_name,
+       price,
+       RANK() OVER (PARTITION BY category ORDER BY price DESC) AS price_rank
+FROM Products
+ORDER BY category, price_rank;
+
+-- Task 10: Previous product price (LAG) and running total of product prices.
+SELECT product_id,
+       product_name,
+       price,
+       LAG(price) OVER (ORDER BY product_id) AS previous_price,
+       SUM(price) OVER (ORDER BY product_id
+                        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_total
+FROM Products
+ORDER BY product_id;
