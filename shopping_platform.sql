@@ -187,3 +187,53 @@ WHERE p1.price = (
     WHERE p2.category = p1.category
 )
 ORDER BY p1.category;
+
+
+-- =====================================================================
+-- Section 3: Set Operations
+-- =====================================================================
+
+-- Task 7: Combine products from two different categories using UNION.
+SELECT product_name, category, price
+FROM Products
+WHERE category = 'Electronics'
+UNION
+SELECT product_name, category, price
+FROM Products
+WHERE category = 'Sports'
+ORDER BY category, price DESC;
+
+-- Task 8: MySQL alternatives for INTERSECT and EXCEPT.
+--         Set A = customers who ordered Electronics
+--         Set B = customers who ordered Sports products
+
+-- INTERSECT alternative (INNER JOIN): customers in both A and B.
+SELECT a.customer_id,
+       c.customer_name
+FROM (SELECT DISTINCT o.customer_id
+      FROM Orders o
+      INNER JOIN Products p ON o.product_id = p.product_id
+      WHERE p.category = 'Electronics') AS a
+INNER JOIN (SELECT DISTINCT o.customer_id
+            FROM Orders o
+            INNER JOIN Products p ON o.product_id = p.product_id
+            WHERE p.category = 'Sports') AS b
+        ON a.customer_id = b.customer_id
+INNER JOIN Customers c ON c.customer_id = a.customer_id
+ORDER BY a.customer_id;
+
+-- EXCEPT alternative (LEFT JOIN ... IS NULL): customers in A but not in B.
+SELECT a.customer_id,
+       c.customer_name
+FROM (SELECT DISTINCT o.customer_id
+      FROM Orders o
+      INNER JOIN Products p ON o.product_id = p.product_id
+      WHERE p.category = 'Electronics') AS a
+LEFT JOIN (SELECT DISTINCT o.customer_id
+           FROM Orders o
+           INNER JOIN Products p ON o.product_id = p.product_id
+           WHERE p.category = 'Sports') AS b
+       ON a.customer_id = b.customer_id
+INNER JOIN Customers c ON c.customer_id = a.customer_id
+WHERE b.customer_id IS NULL
+ORDER BY a.customer_id;
