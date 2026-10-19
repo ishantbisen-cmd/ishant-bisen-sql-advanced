@@ -141,3 +141,49 @@ SELECT c.customer_id,
 FROM Customers c
 LEFT JOIN Orders o ON c.customer_id = o.customer_id
 ORDER BY c.customer_id, o.order_id;
+
+
+-- =====================================================================
+-- Section 2: Subqueries
+-- =====================================================================
+
+-- Task 4: Find products priced above the average product price.
+SELECT product_id,
+       product_name,
+       category,
+       price
+FROM Products
+WHERE price > (SELECT AVG(price) FROM Products)
+ORDER BY price DESC;
+
+-- Task 5: Customers whose total purchase amount is greater than the
+--         average customer purchase amount.
+SELECT c.customer_id,
+       c.customer_name,
+       SUM(o.quantity * p.price) AS total_purchase
+FROM Customers c
+INNER JOIN Orders o   ON c.customer_id = o.customer_id
+INNER JOIN Products p ON o.product_id  = p.product_id
+GROUP BY c.customer_id, c.customer_name
+HAVING SUM(o.quantity * p.price) > (
+    SELECT AVG(customer_total)
+    FROM (
+        SELECT SUM(o2.quantity * p2.price) AS customer_total
+        FROM Orders o2
+        INNER JOIN Products p2 ON o2.product_id = p2.product_id
+        GROUP BY o2.customer_id
+    ) AS customer_totals
+)
+ORDER BY total_purchase DESC;
+
+-- Task 6: Highest-priced product in each category (correlated subquery).
+SELECT p1.category,
+       p1.product_name,
+       p1.price
+FROM Products p1
+WHERE p1.price = (
+    SELECT MAX(p2.price)
+    FROM Products p2
+    WHERE p2.category = p1.category
+)
+ORDER BY p1.category;
