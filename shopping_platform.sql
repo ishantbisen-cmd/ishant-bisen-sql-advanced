@@ -109,3 +109,35 @@ INSERT INTO Orders (order_id, customer_id, product_id, quantity, order_date) VAL
 (21, 1,  12, 1, '2025-05-15'),
 (22, 3,  9,  1, '2025-05-21');
 
+
+-- =====================================================================
+-- Section 1: Advanced Joins
+-- =====================================================================
+
+-- Task 1: Display each customer along with the products they ordered.
+SELECT c.customer_id,
+       c.customer_name,
+       p.product_name,
+       o.quantity,
+       o.order_date
+FROM Customers c
+INNER JOIN Orders o   ON c.customer_id = o.customer_id
+INNER JOIN Products p ON o.product_id  = p.product_id
+ORDER BY c.customer_id, o.order_date;
+
+-- Task 2: Display all possible combinations of customers and products (CROSS JOIN).
+--         12 customers x 13 products = 156 rows.
+SELECT c.customer_name,
+       p.product_name
+FROM Customers c
+CROSS JOIN Products p
+ORDER BY c.customer_id, p.product_id;
+
+-- Task 3: Display all customers and their orders, including customers with no orders.
+SELECT c.customer_id,
+       c.customer_name,
+       o.order_id,
+       o.order_date
+FROM Customers c
+LEFT JOIN Orders o ON c.customer_id = o.customer_id
+ORDER BY c.customer_id, o.order_id;
