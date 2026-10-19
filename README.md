@@ -1,78 +1,110 @@
-# Online Bookstore – SQL Fundamentals Assignment
+# Online Shopping Platform – Advanced SQL Assignment
+
+**Author:** Ishant Bisen
+**Database:** MySQL 8.0 (run in Docker)
 
 ## Assignment Overview
 
-As a Database Developer for an online bookstore, the goal of this assignment is to design a small
-relational database for books and their authors, populate it with sample data, and write SQL queries
-that the business team can use to retrieve, analyze and manage the data.
+An online shopping platform stores customer, product and order data in a relational database and has
+grown rapidly in both data volume and user activity. As part of a database modernization initiative,
+this assignment implements advanced SQL solutions for business reporting, sales analysis, database
+automation, transaction management and query optimization.
 
-The assignment covers:
+All statements are in a single script, [`shopping_platform.sql`](shopping_platform.sql), organised
+section-wise with `-- Section N` and `-- Task N` comments:
 
 | Section | Topic | Tasks |
 |---|---|---|
-| 1 | Basic Queries (`SELECT`, column aliases, `DISTINCT`) | 1 – 4 |
-| 2 | Filtering Data (`WHERE`, `BETWEEN`, `LIKE`) | 5 – 9 |
-| 3 | Sorting and Limiting Results (`ORDER BY`, `LIMIT`) | 10 – 11 |
-| 4 | Aggregate Functions (`COUNT`, `SUM`, `AVG`, `MAX`, `MIN`) | 12 |
-| 5 | `GROUP BY` and `HAVING` | 13 – 14 |
-| 6 | Joins (`INNER`, `LEFT`, `RIGHT`) | 15 – 17 |
-| 7 | Data Manipulation (`INSERT`, `UPDATE`, `DELETE`) | 18 – 20 |
-| 8 | Creating Tables and Constraints | 21 |
-
-All statements are in a single script, [`bookstore.sql`](bookstore.sql), organised in task order with
-`-- Task N` comments.
-
-**Database:** MySQL 8.0 (run in Docker)
+| 1 | Advanced Joins | 1 – 3 |
+| 2 | Subqueries | 4 – 6 |
+| 3 | Set Operations | 7 – 8 |
+| 4 | Window Functions | 9 – 10 |
+| 5 | Common Table Expressions (CTEs) | 11 – 12 |
+| 6 | Views | 13 |
+| 7 | Indexes and Query Performance | 14 – 15 |
+| 8 | Stored Procedures and Functions | 16 – 17 |
+| 9 | Transactions | 18 |
+| 10 | SQL Triggers | 19 |
+| 11 | Performance Tuning | 20 |
 
 ## Repository Structure
 
 ```
 .
-├── bookstore.sql        # CREATE TABLE, sample INSERTs and queries for Tasks 1–21
-├── docker-compose.yml   # Starts a MySQL 8.0 container with the script mounted
-├── screenshots/         # Execution screenshots
+├── shopping_platform.sql   # Tables, sample data and solutions for Tasks 1–20
+├── docker-compose.yml      # Starts a MySQL 8.0 container on port 3307
+├── screenshots/            # Execution screenshots
 └── README.md
 ```
 
 ## Database Schema
 
 ```
-Authors (1) ────────< (many) Books
+Customers (1) ───< (many) Orders (many) >─── (1) Products
+                            │
+                            └── AFTER INSERT trigger ──> Order_Audit
 ```
 
-### Authors
+### Customers
 
 | Column | Data Type | Constraints |
 |---|---|---|
-| author_id | INT | PRIMARY KEY |
-| author_name | VARCHAR(100) | NOT NULL |
-| country | VARCHAR(50) | |
+| customer_id | INT | PRIMARY KEY |
+| customer_name | VARCHAR(100) | NOT NULL |
+| city | VARCHAR(50) | |
+| email | VARCHAR(100) | NOT NULL, UNIQUE |
 
-### Books
-
-| Column | Data Type | Constraints |
-|---|---|---|
-| book_id | INT | PRIMARY KEY |
-| title | VARCHAR(100) | NOT NULL |
-| author_id | INT | FOREIGN KEY → Authors(author_id) |
-| category | VARCHAR(50) | |
-| price | DECIMAL(10,2) | |
-| published_year | INT | |
-
-### Publishers (Task 21)
+### Products
 
 | Column | Data Type | Constraints |
 |---|---|---|
-| publisher_id | INT | PRIMARY KEY |
-| publisher_name | VARCHAR(100) | NOT NULL, UNIQUE |
-| country | VARCHAR(50) | NOT NULL, DEFAULT 'India' |
-| established_year | INT | |
+| product_id | INT | PRIMARY KEY |
+| product_name | VARCHAR(100) | NOT NULL |
+| category | VARCHAR(50) | NOT NULL |
+| price | DECIMAL(10,2) | NOT NULL |
+| created_date | DATE | Used by the performance tuning query in Task 20 |
+
+### Orders
+
+| Column | Data Type | Constraints |
+|---|---|---|
+| order_id | INT | PRIMARY KEY |
+| customer_id | INT | NOT NULL, FOREIGN KEY → Customers(customer_id) |
+| product_id | INT | NOT NULL, FOREIGN KEY → Products(product_id) |
+| quantity | INT | NOT NULL |
+| order_date | DATE | NOT NULL |
+
+### Order_Audit (Task 19)
+
+| Column | Data Type | Constraints |
+|---|---|---|
+| audit_id | INT | AUTO_INCREMENT, PRIMARY KEY |
+| order_id | INT | NOT NULL |
+| customer_id | INT | NOT NULL |
+| product_id | INT | NOT NULL |
+| quantity | INT | NOT NULL |
+| order_date | DATE | NOT NULL |
+| action | VARCHAR(20) | NOT NULL |
+| action_time | DATETIME | DEFAULT CURRENT_TIMESTAMP |
 
 ### Sample Data
 
-- **6 authors** from 6 countries: USA, India, Israel, United Kingdom, Japan, Brazil.
-  Paulo Coelho (Brazil) intentionally has no books, so he appears with `NULL` in the LEFT JOIN (Task 16).
-- **12 books** across 4 categories: Programming, History, Fiction, Fantasy.
+- **12 customers** from 12 Indian cities. Two of them (Rahul Verma, Kavya Kulkarni) have no orders,
+  so they appear with `NULL` order columns in the LEFT JOIN (Task 3).
+- **13 products** across 5 categories: Electronics, Clothing, Sports, Books, Home & Kitchen.
+  Prices range from ₹399 to ₹4,999, with 8 products above ₹1,000 for the view in Task 13.
+- **22 orders** placed between January and May 2025.
+
+### Database Objects
+
+| Object | Name | Task |
+|---|---|---|
+| View | `Premium_Products` | 13 |
+| Index | `idx_products_category` | 14 (replaced in Task 20) |
+| Index | `idx_products_category_created` | 20 |
+| Stored Procedure | `GetProductsByCategory(category)` | 16 |
+| Function | `CalculateOrderTotal(order_id)` | 17 |
+| Trigger | `trg_orders_after_insert` | 19 |
 
 ## Steps to Execute the SQL Script
 
@@ -83,8 +115,8 @@ Authors (1) ────────< (many) Books
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/ishantbisen-cmd/bookstore-sql-assignment.git
-cd bookstore-sql-assignment
+git clone https://github.com/ishantbisen-cmd/ishant-bisen-sql-advanced.git
+cd ishant-bisen-sql-advanced
 ```
 
 ### 2. Start MySQL
@@ -96,42 +128,38 @@ docker compose up -d
 The first start downloads the MySQL image and takes about a minute. Check that it is ready:
 
 ```bash
-docker exec bookstore-mysql mysqladmin ping -uroot -proot
+docker exec shopping-mysql mysqladmin ping -uroot -proot
 # mysqld is alive
 ```
 
 ### 3. Run the full script
 
 ```bash
-docker exec -i bookstore-mysql mysql -uroot -proot --table < bookstore.sql
+docker exec -i shopping-mysql mysql -uroot -proot --table < shopping_platform.sql
 ```
 
-This creates the `bookstore` database, the tables and sample data, and prints the result of every task.
-
-> The script starts with `CREATE DATABASE bookstore;`, so it expects a fresh server. To run it again,
-> drop the database first:
->
-> ```bash
-> docker exec bookstore-mysql mysql -uroot -proot -e "DROP DATABASE IF EXISTS bookstore;"
-> ```
+The script starts with `DROP DATABASE IF EXISTS shopping_platform;`, so it can be run any number of
+times and always starts from a clean state.
 
 ### 4. Run individual queries (optional)
 
-Open an interactive MySQL shell connected to the database:
-
 ```bash
-docker exec -it bookstore-mysql mysql -uroot -proot bookstore
+docker exec -it shopping-mysql mysql -uroot -proot shopping_platform
 ```
 
-Then paste any query from `bookstore.sql`, for example `SELECT * FROM Books;`. Type `exit` to leave.
+Then paste any query from the script, for example:
 
-A GUI client (MySQL Workbench, DBeaver, etc.) can also connect using:
+```sql
+CALL GetProductsByCategory('Sports');
+SELECT CalculateOrderTotal(11);
+SELECT * FROM Premium_Products;
+```
+
+A GUI client (MySQL Workbench, DBeaver, etc.) can connect using:
 
 | Host | Port | User | Password | Database |
 |---|---|---|---|---|
-| 127.0.0.1 | 3306 | root | root | bookstore |
-
-> Table names are case-sensitive in MySQL on Linux (Docker): use `Books`, not `books`.
+| 127.0.0.1 | 3307 | root | root | shopping_platform |
 
 ### 5. Stop MySQL
 
@@ -139,26 +167,72 @@ A GUI client (MySQL Workbench, DBeaver, etc.) can also connect using:
 docker compose down
 ```
 
+## Summary of Implemented Advanced SQL Concepts
+
+| Concept | Where | What it demonstrates |
+|---|---|---|
+| **INNER JOIN (3 tables)** | Task 1 | Combines Customers, Orders and Products to show who ordered what |
+| **CROSS JOIN** | Task 2 | Cartesian product: every customer paired with every product (12 × 13 = 156 rows) |
+| **LEFT JOIN** | Task 3 | Keeps customers with no orders, showing `NULL` for their order columns |
+| **Scalar subquery** | Task 4 | Compares each price against `(SELECT AVG(price) FROM Products)` |
+| **Nested subquery in HAVING** | Task 5 | Compares each customer's total with the average of all customer totals (a derived table) |
+| **Correlated subquery** | Task 6 | Inner query re-runs per row, finding `MAX(price)` for that row's category |
+| **UNION** | Task 7 | Merges Electronics and Sports products into one result, removing duplicates |
+| **INTERSECT / EXCEPT alternatives** | Task 8 | `INNER JOIN` keeps customers in both sets; `LEFT JOIN ... WHERE b.customer_id IS NULL` keeps customers only in the first set |
+| **RANK()** | Task 9 | Ranks products by price within each category using `PARTITION BY` |
+| **LAG() and running total** | Task 10 | Previous row's price, and a cumulative `SUM() OVER (... ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)` |
+| **CTE** | Task 11 | `WITH customer_totals AS (...)` computes totals once and reuses them for the average and the filter |
+| **Recursive CTE** | Task 12 | Anchor `SELECT 1` plus recursive `n + 1` until `n = 10` |
+| **View** | Task 13 | `Premium_Products` stores the "price above ₹1,000" query so it can be reused like a table |
+| **Index** | Task 14 | B-tree index on `category` to avoid full table scans |
+| **EXPLAIN** | Task 15 | With the index: `type = ref`, 4 rows examined. With the index ignored: `type = ALL`, 13 rows (full scan) |
+| **Stored procedure** | Task 16 | `GetProductsByCategory` takes an `IN` parameter and returns the matching products |
+| **Stored function** | Task 17 | `CalculateOrderTotal` returns `quantity × price` for an order and can be used inside `SELECT` |
+| **Transactions** | Task 18 | `COMMIT` makes a price change permanent; `ROLLBACK` undoes a change that was visible inside the transaction |
+| **Trigger** | Task 19 | `AFTER INSERT` trigger on Orders writes an audit row to `Order_Audit` automatically |
+| **Performance tuning** | Task 20 | Removes `SELECT *` and `DISTINCT`, replaces `YEAR(created_date) = 2024` with a date range, and adds a composite index. EXPLAIN shows the optimized query uses both index columns (`type = range`, `key_len = 206`) instead of only `category` (`key_len = 202`) |
+
 ## Screenshots
 
-### Aggregate Functions (Task 12)
+### Advanced Join (Tasks 1 and 3)
 
-![Task 12 – Aggregate Functions](screenshots/task12_aggregate_functions.png)
+![Advanced Join](screenshots/01_advanced_join.png)
 
-### INNER JOIN (Task 15)
+### Subquery (Tasks 4 – 6)
 
-![Task 15 – INNER JOIN](screenshots/task15_inner_join.png)
+![Subquery](screenshots/02_subquery.png)
 
-### CREATE TABLE with Constraints (Task 21)
+### Window Function (Tasks 9 – 10)
 
-![Task 21 – CREATE TABLE](screenshots/task21_create_table.png)
+![Window Function](screenshots/04_window_function.png)
+
+### CTE (Tasks 11 – 12)
+
+![CTE](screenshots/05_cte.png)
+
+### View (Task 13)
+
+![View](screenshots/06_view.png)
+
+### EXPLAIN Query Output (Tasks 14 – 15)
+
+![EXPLAIN](screenshots/07_explain.png)
+
+### Stored Procedure and Function (Tasks 16 – 17)
+
+![Stored Procedure and Function](screenshots/08_stored_procedure_function.png)
+
+### Transaction – COMMIT / ROLLBACK (Task 18)
+
+![Transaction](screenshots/09_transaction.png)
+
+### Trigger Execution (Task 19)
+
+![Trigger](screenshots/10_trigger.png)
 
 ### Additional Screenshots
 
-| Task | Screenshot |
+| Section | Screenshot |
 |---|---|
-| Task 1 – Sample data in Authors and Books | [task01_all_books_and_sample_data.png](screenshots/task01_all_books_and_sample_data.png) |
-| Tasks 3 & 4 – Column aliases and DISTINCT | [task03_04_aliases_and_distinct.png](screenshots/task03_04_aliases_and_distinct.png) |
-| Tasks 10 & 11 – ORDER BY and LIMIT | [task10_11_sorting_and_limit.png](screenshots/task10_11_sorting_and_limit.png) |
-| Task 13 – GROUP BY | [task13_group_by.png](screenshots/task13_group_by.png) |
-| Task 14 – HAVING | [task14_having.png](screenshots/task14_having.png) |
+| Set Operations (Tasks 7 – 8) | [03_set_operations.png](screenshots/03_set_operations.png) |
+| Performance Tuning (Task 20) | [11_performance_tuning.png](screenshots/11_performance_tuning.png) |
