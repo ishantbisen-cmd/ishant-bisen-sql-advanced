@@ -307,3 +307,25 @@ WHERE price > 1000;
 
 SELECT * FROM Premium_Products
 ORDER BY price DESC;
+
+
+-- =====================================================================
+-- Section 7: Indexes and Query Performance
+-- =====================================================================
+
+-- Task 14: Create an index on the category column of Products.
+CREATE INDEX idx_products_category ON Products (category);
+
+SHOW INDEX FROM Products;
+
+-- Task 15: Use EXPLAIN to analyze a query that filters products by category.
+EXPLAIN
+SELECT product_id, product_name, price
+FROM Products
+WHERE category = 'Electronics';
+
+-- Same query with the index ignored, for comparison (type = ALL, full table scan).
+EXPLAIN
+SELECT product_id, product_name, price
+FROM Products IGNORE INDEX (idx_products_category)
+WHERE category = 'Electronics';
