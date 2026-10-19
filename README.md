@@ -1,30 +1,24 @@
-# Assignment Submission – Online Bookstore SQL
-
-| Item | Value |
+| **Performance tuning** | Task 20 | Removes `SELECT *` and `DISTINCT`, replaces `YEAR(created_date) = 2024` with a date range, and adds a composite index. EXPLAIN shows the optimized query uses both index columns (`type = range`, `key_len = 206`) instead of only `category` (`key_len = 202`) |
+## Screenshots
+### Advanced Join (Tasks 1 and 3)
+![Advanced Join](screenshots/01_advanced_join.png)
+### Subquery (Tasks 4 – 6)
+![Subquery](screenshots/02_subquery.png)
+### Window Function (Tasks 9 – 10)
+![Window Function](screenshots/04_window_function.png)
+### CTE (Tasks 11 – 12)
+![CTE](screenshots/05_cte.png)
+### View (Task 13)
+![View](screenshots/06_view.png)
+### EXPLAIN Query Output (Tasks 14 – 15)
+![EXPLAIN](screenshots/07_explain.png)
+### Stored Procedure and Function (Tasks 16 – 17)
+![Stored Procedure and Function](screenshots/08_stored_procedure_function.png)
+### Transaction – COMMIT / ROLLBACK (Task 18)
+![Transaction](screenshots/09_transaction.png)
+### Trigger Execution (Task 19)
+![Trigger](screenshots/10_trigger.png)
+### Additional Screenshots
+| Section | Screenshot |
 |---|---|
-| GitHub Repository | https://github.com/ishantbisen-cmd/bookstore-sql-assignment |
-| Pull Request | https://github.com/ishantbisen-cmd/bookstore-sql-assignment/pull/1 |
-| Branch | `feature/bookstore-sql-assignment` |
-
-## Deliverables
-
-| Deliverable | Location |
-|---|---|
-| SQL script (CREATE TABLE, sample INSERTs, Tasks 1–21 in order) | [`bookstore.sql`](bookstore.sql) |
-| README (overview, schema, execution steps) | [`README.md`](README.md) |
-| Screenshot – Aggregate Functions (Task 12) | [`screenshots/task12_aggregate_functions.png`](screenshots/task12_aggregate_functions.png) |
-| Screenshot – INNER JOIN (Task 15) | [`screenshots/task15_inner_join.png`](screenshots/task15_inner_join.png) |
-| Screenshot – CREATE TABLE (Task 21) | [`screenshots/task21_create_table.png`](screenshots/task21_create_table.png) |
-
-## Task Index
-
-| Section | Tasks | Topic |
-|---|---|---|
-| 1 | 1 – 4 | Basic Queries |
-| 2 | 5 – 9 | Filtering Data |
-| 3 | 10 – 11 | Sorting and Limiting Results |
-| 4 | 12 | Aggregate Functions |
-| 5 | 13 – 14 | GROUP BY and HAVING |
-| 6 | 15 – 17 | Joins |
-| 7 | 18 – 20 | Data Manipulation |
-| 8 | 21 | Creating Tables and Constraints |
+| Set Operations (Tasks 7 – 8) | [03_set_operations.png](screenshots/03_set_operations.png) |
