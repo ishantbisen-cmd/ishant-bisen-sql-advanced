@@ -406,3 +406,38 @@ SELECT product_id, product_name, price FROM Products WHERE product_id = 1;
 ROLLBACK;
 
 SELECT product_id, product_name, price FROM Products WHERE product_id = 1;
+
+
+-- =====================================================================
+-- Section 10: SQL Triggers
+-- =====================================================================
+
+-- Task 19: Record every new order in Order_Audit using an AFTER INSERT trigger.
+CREATE TABLE Order_Audit (
+    audit_id    INT         AUTO_INCREMENT PRIMARY KEY,
+    order_id    INT         NOT NULL,
+    customer_id INT         NOT NULL,
+    product_id  INT         NOT NULL,
+    quantity    INT         NOT NULL,
+    order_date  DATE        NOT NULL,
+    action      VARCHAR(20) NOT NULL,
+    action_time DATETIME    DEFAULT CURRENT_TIMESTAMP
+);
+
+DROP TRIGGER IF EXISTS trg_orders_after_insert;
+
+DELIMITER $$
+CREATE TRIGGER trg_orders_after_insert
+AFTER INSERT ON Orders
+FOR EACH ROW
+BEGIN
+    INSERT INTO Order_Audit (order_id, customer_id, product_id, quantity, order_date, action)
+    VALUES (NEW.order_id, NEW.customer_id, NEW.product_id, NEW.quantity, NEW.order_date, 'INSERT');
+END$$
+DELIMITER ;
+
+-- Insert a new order; the trigger writes the audit row automatically.
+INSERT INTO Orders (order_id, customer_id, product_id, quantity, order_date)
+VALUES (23, 11, 6, 1, '2025-06-01');
+
+SELECT * FROM Order_Audit;
