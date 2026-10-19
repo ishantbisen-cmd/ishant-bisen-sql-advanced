@@ -260,3 +260,33 @@ SELECT product_id,
                         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_total
 FROM Products
 ORDER BY product_id;
+
+
+-- =====================================================================
+-- Section 5: Common Table Expressions (CTEs)
+-- =====================================================================
+
+-- Task 11: CTE showing customers whose total purchase amount is above the average.
+WITH customer_totals AS (
+    SELECT c.customer_id,
+           c.customer_name,
+           SUM(o.quantity * p.price) AS total_purchase
+    FROM Customers c
+    INNER JOIN Orders o   ON c.customer_id = o.customer_id
+    INNER JOIN Products p ON o.product_id  = p.product_id
+    GROUP BY c.customer_id, c.customer_name
+)
+SELECT customer_id,
+       customer_name,
+       total_purchase
+FROM customer_totals
+WHERE total_purchase > (SELECT AVG(total_purchase) FROM customer_totals)
+ORDER BY total_purchase DESC;
+
+-- Task 12: Recursive CTE generating the numbers 1 to 10.
+WITH RECURSIVE numbers (n) AS (
+    SELECT 1
+    UNION ALL
+    SELECT n + 1 FROM numbers WHERE n < 10
+)
+SELECT n FROM numbers;
