@@ -441,3 +441,58 @@ INSERT INTO Orders (order_id, customer_id, product_id, quantity, order_date)
 VALUES (23, 11, 6, 1, '2025-06-01');
 
 SELECT * FROM Order_Audit;
+
+
+-- =====================================================================
+-- Section 11: Performance Tuning
+-- =====================================================================
+
+-- Task 20: Optimize the query below using SQL performance tuning best practices.
+
+-- Before: SELECT *, unnecessary DISTINCT, and YEAR() on created_date
+--         prevents any index on created_date from being used.
+SELECT DISTINCT *
+FROM Products
+WHERE YEAR(created_date) = 2024
+  AND category = 'Electronics';
+
+-- Composite index supporting the equality filter (category) and range filter (created_date).
+-- Its leftmost column is category, so it also serves category-only queries and
+-- the single-column index from Task 14 becomes redundant.
+CREATE INDEX idx_products_category_created ON Products (category, created_date);
+DROP INDEX idx_products_category ON Products;
+
+-- After:
+--   1. Only the required columns are selected instead of SELECT *.
+--   2. DISTINCT is removed; product_id is the primary key, so rows are already unique.
+--   3. YEAR(created_date) is replaced by a date range, so the column is not wrapped in a function.
+--   4. The filters match idx_products_category_created, so the query is index-friendly.
+SELECT product_id,
+       product_name,
+       category,
+       price,
+       created_date
+FROM Products
+WHERE category = 'Electronics'
+  AND created_date >= '2024-01-01'
+  AND created_date <  '2025-01-01';
+
+-- EXPLAIN comparison of the original and optimized queries.
+-- Original : type = ref,   key_len = 202 -> only the category part of the index is used.
+-- Optimized: type = range, key_len = 206 -> both category and created_date are used.
+EXPLAIN
+SELECT DISTINCT *
+FROM Products
+WHERE YEAR(created_date) = 2024
+  AND category = 'Electronics';
+
+EXPLAIN
+SELECT product_id,
+       product_name,
+       category,
+       price,
+       created_date
+FROM Products
+WHERE category = 'Electronics'
+  AND created_date >= '2024-01-01'
+  AND created_date <  '2025-01-01';
