@@ -329,3 +329,55 @@ EXPLAIN
 SELECT product_id, product_name, price
 FROM Products IGNORE INDEX (idx_products_category)
 WHERE category = 'Electronics';
+
+
+-- =====================================================================
+-- Section 8: Stored Procedures and Functions
+-- =====================================================================
+
+-- Task 16: Stored procedure to retrieve products by category.
+DROP PROCEDURE IF EXISTS GetProductsByCategory;
+
+DELIMITER $$
+CREATE PROCEDURE GetProductsByCategory (IN p_category VARCHAR(50))
+BEGIN
+    SELECT product_id,
+           product_name,
+           category,
+           price
+    FROM Products
+    WHERE category = p_category
+    ORDER BY price DESC;
+END$$
+DELIMITER ;
+
+CALL GetProductsByCategory('Electronics');
+
+-- Task 17: Function to calculate the total price of an order (price x quantity).
+DROP FUNCTION IF EXISTS CalculateOrderTotal;
+
+DELIMITER $$
+CREATE FUNCTION CalculateOrderTotal (p_order_id INT)
+RETURNS DECIMAL(10,2)
+READS SQL DATA
+BEGIN
+    DECLARE v_total DECIMAL(10,2);
+
+    SELECT o.quantity * p.price
+    INTO v_total
+    FROM Orders o
+    INNER JOIN Products p ON o.product_id = p.product_id
+    WHERE o.order_id = p_order_id;
+
+    RETURN v_total;
+END$$
+DELIMITER ;
+
+SELECT o.order_id,
+       p.product_name,
+       p.price,
+       o.quantity,
+       CalculateOrderTotal(o.order_id) AS order_total
+FROM Orders o
+INNER JOIN Products p ON o.product_id = p.product_id
+ORDER BY o.order_id;
