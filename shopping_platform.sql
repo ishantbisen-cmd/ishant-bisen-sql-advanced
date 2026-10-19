@@ -290,3 +290,20 @@ WITH RECURSIVE numbers (n) AS (
     SELECT n + 1 FROM numbers WHERE n < 10
 )
 SELECT n FROM numbers;
+
+
+-- =====================================================================
+-- Section 6: Views
+-- =====================================================================
+
+-- Task 13: View of products priced above 1000, then retrieve data from it.
+CREATE OR REPLACE VIEW Premium_Products AS
+SELECT product_id,
+       product_name,
+       category,
+       price
+FROM Products
+WHERE price > 1000;
+
+SELECT * FROM Premium_Products
+ORDER BY price DESC;
