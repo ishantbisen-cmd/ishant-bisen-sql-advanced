@@ -101,8 +101,9 @@ Customers (1) ────< (many) Orders (many) >──── (1) Products
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/ishantbisen-cmd/shopping-platform-sql-advanced.git
-cd shopping-platform-sql-advanced
+git clone https://github.com/ishantbisen-cmd/ishant-bisen-sql-advanced.git
+cd ishant-bisen-sql-advanced
+git checkout feature/sql-advanced-assignment
 ```
 
 ### 2. Start MySQL
